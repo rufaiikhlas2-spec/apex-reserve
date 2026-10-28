@@ -125,7 +125,7 @@
                 </div>
             </div>
 
-            <!-- TAB 2: INVEST (PRODUCT CATALOG - Capital x 2 Payouts) -->
+            <!-- TAB 2: INVEST (PRODUCT CATALOG) -->
             <div id="tab-invest" class="hidden" style="display: flex; flex-direction: column; gap: 10px;">
                 <div style="margin-bottom: 4px;">
                     <h2 style="font-size: 15px; font-weight: 700; color: #fff;">Asset Investment Packs</h2>
@@ -184,7 +184,7 @@
                 </div>
             </div>
 
-            <!-- TAB 4: REFER (DEDICATED REFERRAL TAB) -->
+            <!-- TAB 4: REFER -->
             <div id="tab-refer" class="hidden">
                 <div class="glass-panel">
                     <h3 style="font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px;">Affiliate Referral Program</h3>
@@ -260,6 +260,9 @@
 
     <!-- Script Logic with Telegram WebApp SDK Integration -->
     <script>
+        // REPLACE THIS WITH YOUR NEW BOT TOKEN FROM BOTFATHER
+        const TELEGRAM_BOT_TOKEN = "YOUR_NEW_BOT_TOKEN_HERE";
+
         let tg = window.Telegram?.WebApp;
         if (tg) {
             tg.expand(); // Expands mini app to full screen
@@ -329,9 +332,9 @@
             
             currentUser = {
                 telegramId: tgUser?.id ? String(tgUser.id) : '98471520',
-                username: tgUser?.username ? `@${tgUser.username}` : '@klash_dev',
+                username: tgUser?.username ? `@${tgUser.username}` : '@user',
                 fullName: tgUser?.first_name ? `${tgUser.first_name} ${tgUser.last_name || ''}`.trim() : '',
-                isRegistered: tgUser?.first_name ? true : false, // Auto-registers if Telegram name exists
+                isRegistered: tgUser?.first_name ? true : false,
                 balance: 0,
                 assets: [],
                 transactions: []
@@ -366,7 +369,7 @@
             document.getElementById('modal-deposit').style.display = 'none';
         }
 
-        function processDepositSubmission() {
+        async function processDepositSubmission() {
             const amount = document.getElementById('deposit-amount-input').value;
             if (!amount || amount < 100) {
                 alert("Minimum deposit amount is ₦100");
@@ -386,6 +389,39 @@
             renderTransactions();
 
             showToast("Deposit Ticket Generated!", `Ticket for ₦${Number(amount).toLocaleString()} logged successfully in-app.`);
+
+            // Send instant bot notification
+            await sendTelegramBotNotification(amount);
+        }
+
+        async function sendTelegramBotNotification(amount) {
+            if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN === "YOUR_NEW_BOT_TOKEN_HERE") {
+                console.log("Telegram Bot Token is not configured yet.");
+                return;
+            }
+
+            const chatId = currentUser?.telegramId;
+            if (!chatId) return;
+
+            const message = `🔔 *New Deposit Request Received!*\n\n` +
+                            `👤 *User:* ${currentUser.fullName || 'User'} (${currentUser.username})\n` +
+                            `💰 *Amount:* ₦${Number(amount).toLocaleString()}\n` +
+                            `📱 *Phone:* ${currentUser.phone || 'N/A'}\n\n` +
+                            `Status: Pending Admin Verification.`;
+
+            try {
+                await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                });
+            } catch (err) {
+                console.error("Failed to trigger bot message:", err);
+            }
         }
 
         function buyAsset(name, cost, days) {
