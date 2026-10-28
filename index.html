@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apex Reserve | Asset Allocation Protocol</title>
+    <!-- Official Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: #070b14; color: #f8fafc; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* Header */
+        header { border-bottom: 1px solid #1e293b; background: rgba(7, 11, 20, 0.95); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 40; }
+        .brand { font-weight: 800; font-size: 15px; letter-spacing: 0.5px; color: #60a5fa; }
+        .balance-pill { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px; background: #1e3a8a; color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
+
+        /* App Body */
+        .app-body { flex-grow: 1; overflow-y: auto; padding: 16px; padding-bottom: 100px; }
+        .glass-panel { background: rgba(13, 19, 33, 0.9); backdrop-filter: blur(12px); border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 20px; padding: 16px; margin-bottom: 12px; }
+
+        /* Typography & Buttons */
+        h1 { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+        p { font-size: 12px; color: #94a3b8; line-height: 1.4; }
+        .btn-primary { width: 100%; padding: 12px; background: #2563eb; color: #fff; font-weight: 700; font-size: 13px; border: none; border-radius: 14px; cursor: pointer; text-align: center; margin-top: 10px; z-index: 10; position: relative; }
+        .btn-primary:active { background: #1d4ed8; }
+        input { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #1e3a8a; border-radius: 12px; color: #fff; font-size: 13px; margin-top: 6px; outline: none; }
+        
+        /* Bottom Taskbar (5 Items) */
+        nav.bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #070b14; border-top: 1px solid #1e293b; display: grid; grid-template-columns: repeat(5, 1fr); padding: 8px 0; z-index: 100; }
+        nav.bottom-bar button { background: none; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #64748b; cursor: pointer; font-size: 9px; font-weight: 600; gap: 3px; width: 100%; padding: 4px 0; }
+        nav.bottom-bar button.active { color: #60a5fa; }
+        nav.bottom-bar svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+
+        /* Modals & Toasts */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(7, 11, 20, 0.85); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 200; }
+        .modal-card { background: #0d1321; border: 1px solid #1e3a8a; border-radius: 24px; padding: 20px; width: 100%; max-width: 340px; }
+        .toast { position: fixed; bottom: 85px; left: 16px; right: 16px; max-width: 380px; margin: 0 auto; background: #2563eb; color: #fff; padding: 12px 16px; border-radius: 16px; display: flex; align-items: center; gap: 12px; transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 210; pointer-events: none; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <span class="brand">APEX RESERVE</span>
+        <div id="top-balance-pill" class="balance-pill">₦0.00</div>
+    </header>
+
+    <!-- Main Scrollable Content Area -->
+    <main class="app-body">
+
+        <!-- STEP 1: LOGIN / LAUNCH VIEW -->
+        <div id="view-login" style="text-align: center; padding-top: 40px;">
+            <div class="glass-panel" style="padding: 24px;">
+                <h1 style="font-size: 22px; margin-bottom: 8px;">Secure Asset Yield</h1>
+                <p style="margin-bottom: 20px;">Micro-asset allocations yielding ₦200 daily (Capital × 2 Return).</p>
+                <button onclick="initTelegramSession()" class="btn-primary" style="background: #229ED9;">Connect via Telegram</button>
+            </div>
+        </div>
+
+        <!-- STEP 2: REGISTRATION VIEW -->
+        <div id="view-register" class="hidden">
+            <div class="glass-panel">
+                <h1 style="font-size: 18px;">Identity Verification</h1>
+                <p style="margin-bottom: 14px;">Required for automated payout tracking.</p>
+                <form onsubmit="handleRegistration(event)">
+                    <div style="margin-bottom: 12px;">
+                        <p style="color: #cbd5e1; font-weight: 600; margin-bottom: 4px;">Legal Full Name</p>
+                        <input type="text" id="reg-fullname" required placeholder="e.g. Oluwaseun Adeleke">
+                    </div>
+                    <div style="margin-bottom: 14px;">
+                        <p style="color: #cbd5e1; font-weight: 600; margin-bottom: 4px;">Active Phone Number</p>
+                        <input type="tel" id="reg-phone" required placeholder="08012345678">
+                    </div>
+                    <button type="submit" class="btn-primary">Complete Verification</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- APP TABS CONTAINER -->
+        <div id="app-tabs-container" class="hidden">
+
+            <!-- TAB 1: HOME -->
+            <div id="tab-home" style="display: flex; flex-direction: column; gap: 12px;">
+                <div class="glass-panel" style="border-left: 4px solid #3b82f6;">
+                    <p style="color: #93c5fd; font-weight: 600;">⚡ Community asset yield protocol is live. Earn ₦200 daily (Capital × 2 Return).</p>
+                </div>
+
+                <div class="glass-panel">
+                    <div class="flex-between" style="margin-bottom: 12px;">
+                        <div>
+                            <h2 id="dash-welcome-name" style="font-size: 15px; font-weight: 700; color: #fff;">Welcome, User 👋</h2>
+                            <p>Region: Nigeria (₦ NGN)</p>
+                        </div>
+                        <span style="font-size: 10px; background: rgba(59, 130, 246, 0.2); color: #93c5fd; padding: 4px 10px; border-radius: 20px; font-weight: 700;">Verified</span>
+                    </div>
+                    <div class="flex-between">
+                        <div>
+                            <p style="font-size: 10px; font-weight: 700; text-transform: uppercase;">Total Balance</p>
+                            <h2 id="dash-balance" style="font-size: 24px; font-weight: 800; color: #fff; margin-top: 2px;">₦0.00</h2>
+                        </div>
+                        <button onclick="openDepositModal()" class="btn-primary" style="width: auto; padding: 10px 18px; margin-top: 0;">Fund Account</button>
+                    </div>
+                </div>
+
+                <div class="glass-panel">
+                    <div class="flex-between" style="margin-bottom: 8px;">
+                        <h3 style="font-size: 13px; font-weight: 700; color: #fff;">🎁 Daily Rewards Overview</h3>
+                    </div>
+                    <p style="margin-bottom: 12px;">Daily earnings: ₦200 asset yield + ₦500 referral bonus per sign-up.</p>
+                    <button onclick="switchTab('invest')" class="btn-primary" style="background: #0f172a; border: 1px solid #1e3a8a; color: #60a5fa; margin-top: 0;">Explore Asset Packs</button>
+                </div>
+
+                <div class="glass-panel">
+                    <h3 style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #60a5fa; margin-bottom: 10px;">Your Active Portfolios</h3>
+                    <div id="home-nodes-container">
+                        <p style="text-align: center; color: #64748b; padding: 20px 0;">No active asset packs acquired yet.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: INVEST (PRODUCT CATALOG - Capital x 2 Payouts) -->
+            <div id="tab-invest" class="hidden" style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="margin-bottom: 4px;">
+                    <h2 style="font-size: 15px; font-weight: 700; color: #fff;">Asset Investment Packs</h2>
+                    <p>All packs yield ₦200 daily return, paying out 2x your capital upon maturity.</p>
+                </div>
+
+                <div class="glass-panel flex-between" style="margin-bottom: 0;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 13px; color: #fff; margin-bottom: 2px;">📱 Phone Pack</div>
+                        <p>Cost: ₦2,000 | 20 Days | Total Return: ₦4,000 (2x)</p>
+                    </div>
+                    <button onclick="buyAsset('Phone Pack', 2000, 20)" class="btn-primary" style="width: auto; padding: 8px 14px; margin-top: 0;">Acquire</button>
+                </div>
+
+                <div class="glass-panel flex-between" style="margin-bottom: 0;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 13px; color: #fff; margin-bottom: 2px;">❄️ Refrigerator</div>
+                        <p>Cost: ₦3,000 | 30 Days | Total Return: ₦6,000 (2x)</p>
+                    </div>
+                    <button onclick="buyAsset('Refrigerator', 3000, 30)" class="btn-primary" style="width: auto; padding: 8px 14px; margin-top: 0;">Acquire</button>
+                </div>
+
+                <div class="glass-panel flex-between" style="margin-bottom: 0;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 13px; color: #fff; margin-bottom: 2px;">📺 Television</div>
+                        <p>Cost: ₦5,000 | 50 Days | Total Return: ₦10,000 (2x)</p>
+                    </div>
+                    <button onclick="buyAsset('Television', 5000, 50)" class="btn-primary" style="width: auto; padding: 8px 14px; margin-top: 0;">Acquire</button>
+                </div>
+
+                <div class="glass-panel flex-between" style="margin-bottom: 0;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 13px; color: #fff; margin-bottom: 2px;">💻 Laptop Node</div>
+                        <p>Cost: ₦7,500 | 75 Days | Total Return: ₦15,000 (2x)</p>
+                    </div>
+                    <button onclick="buyAsset('Laptop Node', 7500, 75)" class="btn-primary" style="width: auto; padding: 8px 14px; margin-top: 0;">Acquire</button>
+                </div>
+
+                <div class="glass-panel flex-between" style="margin-bottom: 0;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 13px; color: #fff; margin-bottom: 2px;">⚡ Power Generator</div>
+                        <p>Cost: ₦10,000 | 100 Days | Total Return: ₦20,000 (2x)</p>
+                    </div>
+                    <button onclick="buyAsset('Power Generator', 10000, 100)" class="btn-primary" style="width: auto; padding: 8px 14px; margin-top: 0;">Acquire</button>
+                </div>
+            </div>
+
+            <!-- TAB 3: ACTIVITY / TRANSACTIONS -->
+            <div id="tab-transactions" class="hidden">
+                <div style="margin-bottom: 10px;">
+                    <h2 style="font-size: 15px; font-weight: 700; color: #fff;">Transaction Logs</h2>
+                    <p>History of deposits and asset acquisitions.</p>
+                </div>
+                <div id="transactions-container">
+                    <div class="glass-panel" style="text-align: center; color: #64748b; padding: 30px 0;">No transactions recorded yet.</div>
+                </div>
+            </div>
+
+            <!-- TAB 4: REFER (DEDICATED REFERRAL TAB) -->
+            <div id="tab-refer" class="hidden">
+                <div class="glass-panel">
+                    <h3 style="font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px;">Affiliate Referral Program</h3>
+                    <p style="margin-bottom: 12px;">Earn a guaranteed <strong style="color: #60a5fa;">₦500 bonus</strong> for every valid sign-up linked through your network.</p>
+                    <p style="color: #cbd5e1; font-weight: 600; margin-bottom: 4px;">Your Unique Referral Link</p>
+                    <input type="text" readonly id="ref-link-input" value="https://t.me/ApexReserveBot?start=ref_user">
+                </div>
+            </div>
+
+            <!-- TAB 5: PROFILE -->
+            <div id="tab-profile" class="hidden">
+                <div class="glass-panel" style="text-align: center; padding: 24px;">
+                    <div style="width: 50px; height: 50px; background: #1e3a8a; color: #93c5fd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; margin: 0 auto 12px;">AR</div>
+                    <h3 id="profile-name" style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px;">User Name</h3>
+                    <p id="profile-phone" style="margin-bottom: 16px;">08000000000</p>
+                    <button onclick="logoutUser()" class="btn-primary" style="background: #ef4444;">Disconnect Account</button>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- FIXED BOTTOM NAVIGATION TASKBAR (5 Tabs) -->
+    <nav id="bottom-taskbar" class="bottom-bar hidden">
+        <button type="button" onclick="switchTab('home')" id="btn-tab-home" class="active">
+            <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <span>Home</span>
+        </button>
+        <button type="button" onclick="switchTab('invest')" id="btn-tab-invest">
+            <svg viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+            <span>Invest</span>
+        </button>
+        <button type="button" onclick="switchTab('transactions')" id="btn-tab-transactions">
+            <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+            <span>Activity</span>
+        </button>
+        <button type="button" onclick="switchTab('refer')" id="btn-tab-refer">
+            <svg viewBox="0 0 24 24"><path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+            <span>Refer</span>
+        </button>
+        <button type="button" onclick="switchTab('profile')" id="btn-tab-profile">
+            <svg viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            <span>Profile</span>
+        </button>
+    </nav>
+
+    <!-- DEPOSIT MODAL -->
+    <div id="modal-deposit" class="modal-overlay">
+        <div class="modal-card">
+            <div class="flex-between" style="margin-bottom: 12px;">
+                <h3 style="font-size: 14px; font-weight: 700; color: #fff;">Fund Account</h3>
+                <button type="button" onclick="closeDepositModal()" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer; padding: 4px;">&times;</button>
+            </div>
+            <p style="margin-bottom: 12px;">Enter your intended funding amount (Minimum: ₦100). Your ticket will be logged for verification.</p>
+            <p style="color: #cbd5e1; font-weight: 600; margin-bottom: 4px;">Amount (₦)</p>
+            <input type="number" id="deposit-amount-input" min="100" value="1000">
+            <div style="display: flex; gap: 8px; margin-top: 14px;">
+                <button type="button" onclick="closeDepositModal()" class="btn-primary" style="background: #1e293b; color: #cbd5e1;">Cancel</button>
+                <button type="button" onclick="processDepositSubmission()" class="btn-primary" style="margin-top: 0;">Submit Ticket</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast-notification" class="toast">
+        <div style="width: 24px; height: 24px; background: #070b14; color: #60a5fa; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0;">✓</div>
+        <div>
+            <h4 id="toast-title" style="font-size: 12px; font-weight: 700; color: #fff;">Request Generated!</h4>
+            <p id="toast-message" style="font-size: 11px; color: #e2e8f0; margin-top: 2px;">Ticket logged successfully.</p>
+        </div>
+    </div>
+
+    <!-- Script Logic with Telegram WebApp SDK Integration -->
+    <script>
+        let tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.expand(); // Expands mini app to full screen
+            tg.ready();
+        }
+
+        let currentUser = JSON.parse(localStorage.getItem('apex_user')) || null;
+
+        window.onload = function() {
+            checkSessionState();
+        };
+
+        function checkSessionState() {
+            if (!currentUser) {
+                showView('view-login');
+            } else if (!currentUser.isRegistered) {
+                showView('view-register');
+            } else {
+                showView('view-dashboard');
+                const formattedBal = '₦' + (Number(currentUser.balance || 0).toLocaleString());
+                document.getElementById('dash-balance').innerText = formattedBal;
+                document.getElementById('top-balance-pill').innerText = formattedBal;
+                document.getElementById('dash-welcome-name').innerText = `Welcome, ${currentUser.fullName || currentUser.username} 👋`;
+                document.getElementById('profile-name').innerText = currentUser.fullName || 'User';
+                document.getElementById('profile-phone').innerText = currentUser.phone || '08000000000';
+                document.getElementById('ref-link-input').value = `https://t.me/ApexReserveBot?start=ref_${currentUser.telegramId || '101'}`;
+                renderHomeNodes();
+                renderTransactions();
+            }
+        }
+
+        function showView(viewId) {
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('view-register').classList.add('hidden');
+            document.getElementById('app-tabs-container').classList.add('hidden');
+            document.getElementById('bottom-taskbar').classList.add('hidden');
+
+            if (viewId === 'view-login') {
+                document.getElementById('view-login').classList.remove('hidden');
+            } else if (viewId === 'view-register') {
+                document.getElementById('view-register').classList.remove('hidden');
+            } else if (viewId === 'view-dashboard') {
+                document.getElementById('app-tabs-container').classList.remove('hidden');
+                document.getElementById('bottom-taskbar').classList.remove('hidden');
+                switchTab('home');
+            }
+        }
+
+        function switchTab(tabName) {
+            ['home', 'invest', 'transactions', 'refer', 'profile'].forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                if(el) el.classList.add('hidden');
+                const btn = document.getElementById(`btn-tab-${t}`);
+                if(btn) btn.classList.remove('active');
+            });
+
+            const targetTab = document.getElementById(`tab-${tabName}`);
+            if(targetTab) targetTab.classList.remove('hidden');
+            
+            const activeBtn = document.getElementById(`btn-tab-${tabName}`);
+            if(activeBtn) activeBtn.classList.add('active');
+        }
+
+        function initTelegramSession() {
+            // Automatically extracts real Telegram user data when launched from the bot
+            const tgUser = tg?.initDataUnsafe?.user;
+            
+            currentUser = {
+                telegramId: tgUser?.id ? String(tgUser.id) : '98471520',
+                username: tgUser?.username ? `@${tgUser.username}` : '@klash_dev',
+                fullName: tgUser?.first_name ? `${tgUser.first_name} ${tgUser.last_name || ''}`.trim() : '',
+                isRegistered: tgUser?.first_name ? true : false, // Auto-registers if Telegram name exists
+                balance: 0,
+                assets: [],
+                transactions: []
+            };
+
+            localStorage.setItem('apex_user', JSON.stringify(currentUser));
+            checkSessionState();
+        }
+
+        function handleRegistration(event) {
+            event.preventDefault();
+            currentUser.fullName = document.getElementById('reg-fullname').value;
+            currentUser.phone = document.getElementById('reg-phone').value;
+            currentUser.isRegistered = true;
+            localStorage.setItem('apex_user', JSON.stringify(currentUser));
+            checkSessionState();
+        }
+
+        function logoutUser() {
+            if(confirm("Disconnect account session?")) {
+                localStorage.removeItem('apex_user');
+                currentUser = null;
+                checkSessionState();
+            }
+        }
+
+        function openDepositModal() {
+            document.getElementById('modal-deposit').style.display = 'flex';
+        }
+
+        function closeDepositModal() {
+            document.getElementById('modal-deposit').style.display = 'none';
+        }
+
+        function processDepositSubmission() {
+            const amount = document.getElementById('deposit-amount-input').value;
+            if (!amount || amount < 100) {
+                alert("Minimum deposit amount is ₦100");
+                return;
+            }
+
+            closeDepositModal();
+
+            if (!currentUser.transactions) currentUser.transactions = [];
+            currentUser.transactions.unshift({
+                type: 'Deposit Ticket',
+                detail: `₦${Number(amount).toLocaleString()}`,
+                date: 'Just now',
+                status: 'Pending Verification'
+            });
+            localStorage.setItem('apex_user', JSON.stringify(currentUser));
+            renderTransactions();
+
+            showToast("Deposit Ticket Generated!", `Ticket for ₦${Number(amount).toLocaleString()} logged successfully in-app.`);
+        }
+
+        function buyAsset(name, cost, days) {
+            if (currentUser.balance < cost) {
+                alert(`Insufficient balance! You need ₦${cost.toLocaleString()} to acquire this ${name}. Please fund your account first.`);
+                openDepositModal();
+                return;
+            }
+
+            currentUser.balance -= cost;
+            if (!currentUser.assets) currentUser.assets = [];
+            currentUser.assets.push({ name, cost, days, dailyYield: 200, totalReturn: cost * 2 });
+
+            if (!currentUser.transactions) currentUser.transactions = [];
+            currentUser.transactions.unshift({
+                type: 'Asset Acquisition',
+                detail: `${name} (-₦${cost.toLocaleString()})`,
+                date: 'Just now',
+                status: 'Active Yield (2x Return)'
+            });
+
+            localStorage.setItem('apex_user', JSON.stringify(currentUser));
+            checkSessionState();
+            showToast("Asset Acquired!", `Successfully allocated ${name}! Yielding ₦200 daily for ${days} days (Target: ₦${(cost * 2).toLocaleString()}).`);
+            switchTab('home');
+        }
+
+        function renderHomeNodes() {
+            const container = document.getElementById('home-nodes-container');
+            if (!currentUser.assets || currentUser.assets.length === 0) {
+                container.innerHTML = `<p style="text-align: center; color: #64748b; padding: 20px 0;">No active asset packs acquired yet.</p>`;
+                return;
+            }
+
+            container.innerHTML = currentUser.assets.map(asset => `
+                <div class="flex-between" style="background: #070b14; padding: 10px 12px; border-radius: 12px; margin-bottom: 8px; border: 1px solid #1e293b;">
+                    <div>
+                        <strong style="font-size: 12px; color: #fff;">${asset.name}</strong>
+                        <p style="font-size: 10px;">Maturity: ${asset.days} Days | Yield: ₦200/day (2x Target)</p>
+                    </div>
+                    <span style="font-size: 11px; font-weight: 700; color: #60a5fa;">Active</span>
+                </div>
+            `).join('');
+        }
+
+        function renderTransactions() {
+            const container = document.getElementById('transactions-container');
+            if (!currentUser.transactions || currentUser.transactions.length === 0) {
+                container.innerHTML = `<div class="glass-panel" style="text-align: center; color: #64748b; padding: 30px 0;">No transactions recorded yet.</div>`;
+                return;
+            }
+
+            container.innerHTML = currentUser.transactions.map(tx => `
+                <div class="glass-panel flex-between" style="padding: 12px; margin-bottom: 8px;">
+                    <div>
+                        <strong style="font-size: 12px; color: #fff;">${tx.type}</strong>
+                        <p style="font-size: 10px;">${tx.detail} • ${tx.date}</p>
+                    </div>
+                    <span style="font-size: 10px; font-weight: 700; color: #60a5fa; background: rgba(59,130,246,0.1); padding: 3px 8px; border-radius: 6px;">${tx.status}</span>
+                </div>
+            `).join('');
+        }
+
+        function showToast(title, message) {
+            const toast = document.getElementById('toast-notification');
+            document.getElementById('toast-title').innerText = title;
+            document.getElementById('toast-message').innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+    </script>
+</body>
+</html>
