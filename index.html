@@ -11,29 +11,24 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { background-color: #070b14; color: #f8fafc; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         
-        /* Header */
         header { border-bottom: 1px solid #1e293b; background: rgba(7, 11, 20, 0.95); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 40; }
         .brand { font-weight: 800; font-size: 15px; letter-spacing: 0.5px; color: #60a5fa; }
         .balance-pill { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px; background: #1e3a8a; color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
 
-        /* App Body */
         .app-body { flex-grow: 1; overflow-y: auto; padding: 16px; padding-bottom: 100px; }
         .glass-panel { background: rgba(13, 19, 33, 0.9); backdrop-filter: blur(12px); border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 20px; padding: 16px; margin-bottom: 12px; }
 
-        /* Typography & Buttons */
         h1 { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 6px; }
         p { font-size: 12px; color: #94a3b8; line-height: 1.4; }
         .btn-primary { width: 100%; padding: 12px; background: #2563eb; color: #fff; font-weight: 700; font-size: 13px; border: none; border-radius: 14px; cursor: pointer; text-align: center; margin-top: 10px; z-index: 10; position: relative; }
         .btn-primary:active { background: #1d4ed8; }
         input { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #1e3a8a; border-radius: 12px; color: #fff; font-size: 13px; margin-top: 6px; outline: none; }
         
-        /* Bottom Taskbar (5 Items) */
         nav.bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #070b14; border-top: 1px solid #1e293b; display: grid; grid-template-columns: repeat(5, 1fr); padding: 8px 0; z-index: 100; }
         nav.bottom-bar button { background: none; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #64748b; cursor: pointer; font-size: 9px; font-weight: 600; gap: 3px; width: 100%; padding: 4px 0; }
         nav.bottom-bar button.active { color: #60a5fa; }
         nav.bottom-bar svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
 
-        /* Modals & Toasts */
         .modal-overlay { position: fixed; inset: 0; background: rgba(7, 11, 20, 0.85); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 200; }
         .modal-card { background: #0d1321; border: 1px solid #1e3a8a; border-radius: 24px; padding: 20px; width: 100%; max-width: 340px; }
         .toast { position: fixed; bottom: 85px; left: 16px; right: 16px; max-width: 380px; margin: 0 auto; background: #2563eb; color: #fff; padding: 12px 16px; border-radius: 16px; display: flex; align-items: center; gap: 12px; transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 210; pointer-events: none; }
@@ -46,16 +41,14 @@
 </head>
 <body>
 
-    <!-- Header -->
     <header>
         <span class="brand">APEX RESERVE</span>
         <div id="top-balance-pill" class="balance-pill">₦0.00</div>
     </header>
 
-    <!-- Main Scrollable Content Area -->
     <main class="app-body">
 
-        <!-- STEP 1: LOGIN / LAUNCH VIEW -->
+        <!-- VIEW 1: LOGIN -->
         <div id="view-login" style="text-align: center; padding-top: 40px;">
             <div class="glass-panel" style="padding: 24px;">
                 <h1 style="font-size: 22px; margin-bottom: 8px;">Secure Asset Yield</h1>
@@ -64,7 +57,7 @@
             </div>
         </div>
 
-        <!-- STEP 2: REGISTRATION VIEW -->
+        <!-- VIEW 2: REGISTRATION -->
         <div id="view-register" class="hidden">
             <div class="glass-panel">
                 <h1 style="font-size: 18px;">Identity Verification</h1>
@@ -110,14 +103,6 @@
                 </div>
 
                 <div class="glass-panel">
-                    <div class="flex-between" style="margin-bottom: 8px;">
-                        <h3 style="font-size: 13px; font-weight: 700; color: #fff;">🎁 Daily Rewards Overview</h3>
-                    </div>
-                    <p style="margin-bottom: 12px;">Daily earnings: ₦200 asset yield + ₦500 referral bonus per sign-up.</p>
-                    <button onclick="switchTab('invest')" class="btn-primary" style="background: #0f172a; border: 1px solid #1e3a8a; color: #60a5fa; margin-top: 0;">Explore Asset Packs</button>
-                </div>
-
-                <div class="glass-panel">
                     <h3 style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #60a5fa; margin-bottom: 10px;">Your Active Portfolios</h3>
                     <div id="home-nodes-container">
                         <p style="text-align: center; color: #64748b; padding: 20px 0;">No active asset packs acquired yet.</p>
@@ -125,7 +110,7 @@
                 </div>
             </div>
 
-            <!-- TAB 2: INVEST (PRODUCT CATALOG) -->
+            <!-- TAB 2: INVEST -->
             <div id="tab-invest" class="hidden" style="display: flex; flex-direction: column; gap: 10px;">
                 <div style="margin-bottom: 4px;">
                     <h2 style="font-size: 15px; font-weight: 700; color: #fff;">Asset Investment Packs</h2>
@@ -173,7 +158,7 @@
                 </div>
             </div>
 
-            <!-- TAB 3: ACTIVITY / TRANSACTIONS -->
+            <!-- TAB 3: ACTIVITY -->
             <div id="tab-transactions" class="hidden">
                 <div style="margin-bottom: 10px;">
                     <h2 style="font-size: 15px; font-weight: 700; color: #fff;">Transaction Logs</h2>
@@ -208,7 +193,7 @@
 
     </main>
 
-    <!-- FIXED BOTTOM NAVIGATION TASKBAR (5 Tabs) -->
+    <!-- FIXED BOTTOM NAVIGATION TASKBAR -->
     <nav id="bottom-taskbar" class="bottom-bar hidden">
         <button type="button" onclick="switchTab('home')" id="btn-tab-home" class="active">
             <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
@@ -239,7 +224,7 @@
                 <h3 style="font-size: 14px; font-weight: 700; color: #fff;">Fund Account</h3>
                 <button type="button" onclick="closeDepositModal()" style="background:none; border:none; color:#94a3b8; font-size:18px; cursor:pointer; padding: 4px;">&times;</button>
             </div>
-            <p style="margin-bottom: 12px;">Enter your intended funding amount (Minimum: ₦100). Your ticket will be logged for verification.</p>
+            <p style="margin-bottom: 12px;">Enter your intended funding amount (Minimum: ₦100). Once submitted, check your bot DMs for your payment details.</p>
             <p style="color: #cbd5e1; font-weight: 600; margin-bottom: 4px;">Amount (₦)</p>
             <input type="number" id="deposit-amount-input" min="100" value="1000">
             <div style="display: flex; gap: 8px; margin-top: 14px;">
@@ -258,14 +243,12 @@
         </div>
     </div>
 
-    <!-- Script Logic with Telegram WebApp SDK Integration -->
     <script>
-        // REPLACE THIS WITH YOUR NEW BOT TOKEN FROM BOTFATHER
-        const TELEGRAM_BOT_TOKEN = "YOUR_NEW_BOT_TOKEN_HERE";
+        const TELEGRAM_BOT_TOKEN = "9299785312:AAFBoUgEFsCGCTuBBlJqVtFzvYOvsX_Jwuk";
 
         let tg = window.Telegram?.WebApp;
         if (tg) {
-            tg.expand(); // Expands mini app to full screen
+            tg.expand();
             tg.ready();
         }
 
@@ -327,7 +310,6 @@
         }
 
         function initTelegramSession() {
-            // Automatically extracts real Telegram user data when launched from the bot
             const tgUser = tg?.initDataUnsafe?.user;
             
             currentUser = {
@@ -383,44 +365,41 @@
                 type: 'Deposit Ticket',
                 detail: `₦${Number(amount).toLocaleString()}`,
                 date: 'Just now',
-                status: 'Pending Verification'
+                status: 'Pending Admin Payment Assignment'
             });
             localStorage.setItem('apex_user', JSON.stringify(currentUser));
             renderTransactions();
 
-            showToast("Deposit Ticket Generated!", `Ticket for ₦${Number(amount).toLocaleString()} logged successfully in-app.`);
+            showToast("Deposit Ticket Logged!", `Check your Telegram bot chat for payment instructions.`);
 
-            // Send instant bot notification
-            await sendTelegramBotNotification(amount);
+            // Notifies YOU (the admin) with the user ID so you can reply with /pay
+            await sendAdminNotification(amount);
         }
 
-        async function sendTelegramBotNotification(amount) {
-            if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN === "YOUR_NEW_BOT_TOKEN_HERE") {
-                console.log("Telegram Bot Token is not configured yet.");
-                return;
-            }
+        async function sendAdminNotification(amount) {
+            // Your personal Admin Telegram ID
+            const adminChatId = "98471520"; 
 
-            const chatId = currentUser?.telegramId;
-            if (!chatId) return;
-
-            const message = `🔔 *New Deposit Request Received!*\n\n` +
+            const message = `🔔 *NEW DEPOSIT REQUEST*\n\n` +
                             `👤 *User:* ${currentUser.fullName || 'User'} (${currentUser.username})\n` +
+                            `🆔 *User ID:* \`${currentUser.telegramId}\`\n` +
                             `💰 *Amount:* ₦${Number(amount).toLocaleString()}\n` +
                             `📱 *Phone:* ${currentUser.phone || 'N/A'}\n\n` +
-                            `Status: Pending Admin Verification.`;
+                            `*To send payment details & time limit, reply with:*\n` +
+                            `/pay ${currentUser.telegramId} 15mins [Bank Name] - [Acc Number] - [Acc Name]`;
 
             try {
                 await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        chat_id: chatId,
+                        chat_id: adminChatId,
                         text: message,
                         parse_mode: 'Markdown'
                     })
                 });
             } catch (err) {
-                console.error("Failed to trigger bot message:", err);
+                console.error("Failed to notify admin:", err);
             }
         }
 
@@ -445,14 +424,14 @@
 
             localStorage.setItem('apex_user', JSON.stringify(currentUser));
             checkSessionState();
-            showToast("Asset Acquired!", `Successfully allocated ${name}! Yielding ₦200 daily for ${days} days (Target: ₦${(cost * 2).toLocaleString()}).`);
+            showToast("Asset Acquired!", `Successfully allocated ${name}! Yielding ₦200 daily for ${days} days.`);
             switchTab('home');
         }
 
         function renderHomeNodes() {
             const container = document.getElementById('home-nodes-container');
             if (!currentUser.assets || currentUser.assets.length === 0) {
-                container.innerHTML = `<p style="text-align: center; color: #64748b; padding: 20px 0;">No active asset packs acquired yet.</p>`;
+                container.innerHTML = `<p style="text-align: center; color: #64748b; padding: 0;">No active asset packs acquired yet.</p>`;
                 return;
             }
 
